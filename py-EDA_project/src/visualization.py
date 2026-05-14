@@ -261,9 +261,9 @@ def plot_price_by_brand(df: pd.DataFrame, grafico_num: int) -> int:
     print(stats.to_markdown(tablefmt="grid"))
     mas_cara = stats.index[0]
     mas_barata = stats.index[-1]
-    print(f"  La marca mas cara es {mas_cara} (mediana=${stats.iloc[0]['median']:.0f}).")
-    print(f"  La marca mas economica es {mas_barata} (mediana=${stats.iloc[-1]['median']:.0f}).")
-    diff = stats.iloc[0]["median"] - stats.iloc[-1]["median"]
+    print(f"  La marca mas cara es {mas_cara} (mediana=${stats.iloc[0]['Mediana']:.0f}).")
+    print(f"  La marca mas economica es {mas_barata} (mediana=${stats.iloc[-1]['Mediana']:.0f}).")
+    diff = stats.iloc[0]["Mediana"] - stats.iloc[-1]["Mediana"]
     print(f"  Diferencia de mediana entre la mas cara y la mas barata: ${diff:.0f}.")
     print(f"  Archivo: price_by_brand.png")
     return grafico_num + 1
