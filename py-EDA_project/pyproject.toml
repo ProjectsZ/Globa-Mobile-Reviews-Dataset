@@ -9,6 +9,7 @@ dependencies = [
     "matplotlib>=3.7",
     "seaborn>=0.12",
     "scipy>=1.10",
+    "tabulate>=0.10.0",
 ]
 
 [tool.uv]

@@ -5,6 +5,8 @@ import seaborn as sns
 
 
 FIGS_DIR = "reports/figures"
+B = "\033[1m"
+R = "\033[0m"
 
 
 def set_style():
@@ -13,7 +15,7 @@ def set_style():
     plt.rcParams["figure.dpi"] = 100
 
 
-def plot_histograms(df: pd.DataFrame, cols: list = None) -> None:
+def plot_histograms(df: pd.DataFrame, grafico_num: int, cols: list = None) -> int:
     if cols is None:
         cols = df.select_dtypes(include=np.number).columns.tolist()
 
@@ -37,7 +39,7 @@ def plot_histograms(df: pd.DataFrame, cols: list = None) -> None:
     plt.savefig(f"{FIGS_DIR}/histogramas.png", bbox_inches="tight")
     plt.close()
 
-    print(f"\n  --- Interpretacion: Histogramas ---")
+    print(f"\n  {B}Grafico {grafico_num}: Histogramas{R} — distribucion de frecuencias de variables numericas")
     for col in cols[:n_cols]:
         s = df[col].dropna()
         skew = s.skew()
@@ -48,10 +50,11 @@ def plot_histograms(df: pd.DataFrame, cols: list = None) -> None:
         else:
             forma = "sesgada a la izquierda (asimetria negativa)"
         print(f"  {col}: media={s.mean():.2f}, mediana={s.median():.2f}, asimetria={skew:.3f} -> distribucion {forma}")
-    print(f"  Histogramas guardados en {FIGS_DIR}/histogramas.png")
+    print(f"  Archivo: histogramas.png")
+    return grafico_num + 1
 
 
-def plot_boxplots(df: pd.DataFrame, cols: list = None) -> None:
+def plot_boxplots(df: pd.DataFrame, grafico_num: int, cols: list = None) -> int:
     if cols is None:
         cols = df.select_dtypes(include=np.number).columns.tolist()
 
@@ -73,17 +76,18 @@ def plot_boxplots(df: pd.DataFrame, cols: list = None) -> None:
     plt.savefig(f"{FIGS_DIR}/boxplots.png", bbox_inches="tight")
     plt.close()
 
-    print(f"\n  --- Interpretacion: Boxplots ---")
+    print(f"\n  {B}Grafico {grafico_num}: Boxplots{R} — diagramas de caja y bigotes para deteccion de outliers")
     for col in cols[:n_cols]:
         s = df[col].dropna()
         q1, q3 = s.quantile(0.25), s.quantile(0.75)
         iqr = q3 - q1
         outliers = s[(s < q1 - 1.5 * iqr) | (s > q3 + 1.5 * iqr)]
         print(f"  {col}: mediana={s.median():.2f}, Q1={q1:.2f}, Q3={q3:.2f}, IQR={iqr:.2f}, outliers={len(outliers)} ({len(outliers)/len(s)*100:.1f}%)")
-    print(f"  Boxplots guardados en {FIGS_DIR}/boxplots.png")
+    print(f"  Archivo: boxplots.png")
+    return grafico_num + 1
 
 
-def plot_density(df: pd.DataFrame, cols: list = None) -> None:
+def plot_density(df: pd.DataFrame, grafico_num: int, cols: list = None) -> int:
     if cols is None:
         cols = df.select_dtypes(include=np.number).columns.tolist()
 
@@ -108,7 +112,7 @@ def plot_density(df: pd.DataFrame, cols: list = None) -> None:
     plt.savefig(f"{FIGS_DIR}/densidad.png", bbox_inches="tight")
     plt.close()
 
-    print(f"\n  --- Interpretacion: Graficos de Densidad ---")
+    print(f"\n  {B}Grafico {grafico_num}: Graficos de Densidad{R} — estimacion de densidad kernel (KDE)")
     for col in cols[:n_cols]:
         s = df[col].dropna()
         kurt = s.kurtosis()
@@ -119,12 +123,13 @@ def plot_density(df: pd.DataFrame, cols: list = None) -> None:
         else:
             cola = "cola similar a la normal (mesocurtica)"
         print(f"  {col}: curtosis={kurt:.3f} -> {cola}")
-    print(f"  Graficos de densidad guardados en {FIGS_DIR}/densidad.png")
+    print(f"  Archivo: densidad.png")
+    return grafico_num + 1
 
 
-def plot_correlation_heatmap(corr_matrix: pd.DataFrame, title: str = "Matriz de Correlacion") -> None:
+def plot_correlation_heatmap(corr_matrix: pd.DataFrame, grafico_num: int, title: str = "Matriz de Correlacion") -> int:
     if corr_matrix.empty:
-        return
+        return grafico_num
 
     mask = np.triu(np.ones_like(corr_matrix, dtype=bool), k=1)
 
@@ -147,8 +152,7 @@ def plot_correlation_heatmap(corr_matrix: pd.DataFrame, title: str = "Matriz de 
     plt.savefig(f"{FIGS_DIR}/correlation_heatmap.png", bbox_inches="tight")
     plt.close()
 
-    print(f"\n  --- Interpretacion: Heatmap de Correlacion ---")
-    print(f"  El heatmap muestra la matriz de correlacion de Pearson entre variables numericas.")
+    print(f"\n  {B}Grafico {grafico_num}: Heatmap de Correlacion{R} — matriz de correlacion de Pearson entre variables numericas")
     print(f"  Valores cercanos a +1 (rojo) indican correlacion positiva fuerte.")
     print(f"  Valores cercanos a -1 (azul) indican correlacion negativa fuerte.")
     print(f"  Valores cercanos a 0 (blanco) indican correlacion debil o nula.")
@@ -164,10 +168,11 @@ def plot_correlation_heatmap(corr_matrix: pd.DataFrame, title: str = "Matriz de 
             print(f"    {a} <-> {b}: r={v:.3f}")
     else:
         print(f"  No se encontraron correlaciones altas (>0.7).")
-    print(f"  Heatmap de correlacion guardado en {FIGS_DIR}/correlation_heatmap.png")
+    print(f"  Archivo: correlation_heatmap.png")
+    return grafico_num + 1
 
 
-def plot_rating_distribution(df: pd.DataFrame) -> None:
+def plot_rating_distribution(df: pd.DataFrame, grafico_num: int) -> int:
     fig, axes = plt.subplots(1, 2, figsize=(14, 5))
 
     col_map = {c.lower(): c for c in df.columns}
@@ -206,26 +211,35 @@ def plot_rating_distribution(df: pd.DataFrame) -> None:
     plt.savefig(f"{FIGS_DIR}/rating_distribution.png", bbox_inches="tight")
     plt.close()
 
-    print(f"\n  --- Interpretacion: Distribucion de Ratings y Sentimiento ---")
+    print(f"\n  {B}Grafico {grafico_num}: Distribucion de Ratings y Sentimiento{R} — frecuencias de calificaciones (1-5) y polaridad de sentimiento")
     total = len(df)
+    rating_table = pd.DataFrame({
+        "Rating": rating_counts.index,
+        "Frecuencia": rating_counts.values,
+        "%": [f"{c/total*100:.1f}" for c in rating_counts.values]
+    })
     print(f"  Rating promedio: {df[rating_col].mean():.2f} / 5.0 (mediana: {df[rating_col].median():.0f})")
     print(f"  Distribucion de calificaciones:")
-    for r, c in rating_counts.items():
-        print(f"    Rating {r}: {c} ({c/total*100:.1f}%)")
+    print(rating_table.to_markdown(index=False, tablefmt="grid"))
+    sent_table = pd.DataFrame({
+        "Sentimiento": sentiment_counts.index,
+        "Frecuencia": sentiment_counts.values,
+        "%": [f"{c/total*100:.1f}" for c in sentiment_counts.values]
+    })
     print(f"  Distribucion de sentimiento:")
-    for s, c in sentiment_counts.items():
-        print(f"    {s}: {c} ({c/total*100:.1f}%)")
+    print(sent_table.to_markdown(index=False, tablefmt="grid"))
     positivo = sentiment_counts.get("Positive", 0)
     print(f"  La mayoria de las resenhas son {('positivas' if positivo > total/2 else 'negativas o neutrales')} ({positivo/total*100:.1f}% Positive).")
-    print(f"  Distribucion de ratings guardada en {FIGS_DIR}/rating_distribution.png")
+    print(f"  Archivo: rating_distribution.png")
+    return grafico_num + 1
 
 
-def plot_price_by_brand(df: pd.DataFrame) -> None:
+def plot_price_by_brand(df: pd.DataFrame, grafico_num: int) -> int:
     col_map = {c.lower(): c for c in df.columns}
     brand_col = col_map.get("marca", col_map.get("brand", "brand"))
     price_col = col_map.get("precio_usd", col_map.get("price_usd", "price_usd"))
     if brand_col not in df.columns or price_col not in df.columns:
-        return
+        return grafico_num
 
     fig, ax = plt.subplots(figsize=(14, 6))
     brand_order = df.groupby(brand_col)[price_col].median().sort_values(ascending=False).index
@@ -240,17 +254,19 @@ def plot_price_by_brand(df: pd.DataFrame) -> None:
     plt.savefig(f"{FIGS_DIR}/price_by_brand.png", bbox_inches="tight")
     plt.close()
 
-    print(f"\n  --- Interpretacion: Precio por Marca ---")
+    print(f"\n  {B}Grafico {grafico_num}: Precio por Marca{R} — distribucion de precios USD agrupados por marca")
     stats = df.groupby(brand_col)[price_col].agg(["mean", "median", "min", "max", "std"]).sort_values("median", ascending=False)
-    for marca, row in stats.iterrows():
-        print(f"  {marca}: media=${row['mean']:.0f}, mediana=${row['median']:.0f}, rango=[${row['min']:.0f}-${row['max']:.0f}]")
+    stats = stats.round(0).astype(int)
+    stats.columns = ["Media", "Mediana", "Min", "Max", "Std"]
+    print(stats.to_markdown(tablefmt="grid"))
     mas_cara = stats.index[0]
     mas_barata = stats.index[-1]
     print(f"  La marca mas cara es {mas_cara} (mediana=${stats.iloc[0]['median']:.0f}).")
     print(f"  La marca mas economica es {mas_barata} (mediana=${stats.iloc[-1]['median']:.0f}).")
     diff = stats.iloc[0]["median"] - stats.iloc[-1]["median"]
     print(f"  Diferencia de mediana entre la mas cara y la mas barata: ${diff:.0f}.")
-    print(f"  Precio por marca guardado en {FIGS_DIR}/price_by_brand.png")
+    print(f"  Archivo: price_by_brand.png")
+    return grafico_num + 1
 
 
 def generate_all_visualizations(df: pd.DataFrame, corr_matrix: pd.DataFrame = None) -> None:
@@ -263,11 +279,12 @@ def generate_all_visualizations(df: pd.DataFrame, corr_matrix: pd.DataFrame = No
     print("GENERACION DE VISUALIZACIONES")
     print("=" * 60)
 
-    plot_histograms(df)
-    plot_boxplots(df)
-    plot_density(df)
-    plot_rating_distribution(df)
-    plot_price_by_brand(df)
+    n = 1
+    n = plot_histograms(df, n)
+    n = plot_boxplots(df, n)
+    n = plot_density(df, n)
+    n = plot_rating_distribution(df, n)
+    n = plot_price_by_brand(df, n)
 
     if corr_matrix is not None and not corr_matrix.empty:
-        plot_correlation_heatmap(corr_matrix)
+        n = plot_correlation_heatmap(corr_matrix, n)
