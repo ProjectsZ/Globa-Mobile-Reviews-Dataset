@@ -1,0 +1,15 @@
+[project]
+name = "py-eda-project"
+version = "1.0.0"
+description = "EDA - Global Mobile Reviews Dataset"
+requires-python = ">=3.10"
+dependencies = [
+    "pandas>=2.0",
+    "numpy>=1.24",
+    "matplotlib>=3.7",
+    "seaborn>=0.12",
+    "scipy>=1.10",
+]
+
+[tool.uv]
+python-preference = "only-managed"
