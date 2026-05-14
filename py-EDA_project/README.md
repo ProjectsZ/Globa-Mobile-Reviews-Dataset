@@ -236,6 +236,12 @@ All outputs are saved to the `reports/` directory:
 ## Running the Pipeline
 
 ```bash
+# Crear/actualizar el entorno (Eso instala dependencias del proyecto e ipykernel dentro de .venv.)
+uv sync --group dev
+
+# Activar ese entorno en la terminal (PowerShell)
+.\.venv\Scripts\Activate.ps1
+
 # Standard run (no outlier removal)
 uv run python main.py
 
@@ -248,3 +254,4 @@ uv run python main.py --remove-outliers
 ## License
 
 This project is for educational and research purposes.
+

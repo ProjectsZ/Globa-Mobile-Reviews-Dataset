@@ -12,5 +12,8 @@ dependencies = [
     "tabulate>=0.10.0",
 ]
 
+[dependency-groups]
+dev = ["ipykernel"]
+
 [tool.uv]
 python-preference = "only-managed"
