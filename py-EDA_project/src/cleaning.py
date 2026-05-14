@@ -18,16 +18,15 @@ def adjust_dtypes(df: pd.DataFrame) -> pd.DataFrame:
     for col in date_cols:
         if col in df.columns:
             df[col] = pd.to_datetime(df[col], errors="coerce")
-            print(f"  {col} -> datetime")
-            cambios.append(col)
+            cambios.append({"Columna": col, "Tipo Anterior": "object", "Tipo Nuevo": "datetime"})
 
     compra_col = next((c for c in df.columns if c.lower() in ("compra_verificada", "verified_purchase")), None)
     if compra_col:
+        old_dtype = df[compra_col].dtype
         df[compra_col] = (
             df[compra_col].map({"True": True, "False": False}).astype("bool")
         )
-        print(f"  {compra_col} -> bool")
-        cambios.append(compra_col)
+        cambios.append({"Columna": compra_col, "Tipo Anterior": str(old_dtype), "Tipo Nuevo": "bool"})
 
     cat_cols = (
         df.select_dtypes(include="object")
@@ -38,14 +37,14 @@ def adjust_dtypes(df: pd.DataFrame) -> pd.DataFrame:
         n_unique = df[col].nunique()
         low = col.lower()
         if n_unique < 20 and low not in ("texto_de_resenha", "nombre_del_cliente", "precio_local", "review_text", "customer_name", "price_local"):
+            old_dtype = df[col].dtype
             df[col] = df[col].astype("category")
-            print(f"  {col} -> category ({n_unique} categorias)")
-            cambios.append(col)
+            cambios.append({"Columna": col, "Tipo Anterior": str(old_dtype), "Tipo Nuevo": f"category ({n_unique})"})
 
-    _print_sep("Resumen de Conversion de Tipos")
-    print(f"  Se ajustaron {len(cambios)} columnas:")
-    for c in cambios:
-        print(f"    - {c}: ahora es {df[c].dtype}")
+    _print_sep("Tabla de Conversion de Tipos")
+    cambios_df = pd.DataFrame(cambios)
+    print(cambios_df.to_markdown(index=False, tablefmt="grid"))
+    print(f"\n  Se ajustaron {len(cambios)} columnas.")
     print(f"  Con estos ajustes, el uso de memoria se reduce y las variables quedan")
     print(f"  en el formato correcto para el analisis numerico y grafico.")
 

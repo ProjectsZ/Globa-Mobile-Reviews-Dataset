@@ -1,5 +1,10 @@
+import os
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+FIGS_DIR = "reports/figures"
 
 
 def _print_sep(title):
@@ -43,6 +48,28 @@ def descriptive_stats(df: pd.DataFrame) -> pd.DataFrame:
     print("\n--- Estadisticas Descriptivas (Variables Numericas) ---")
     print(stats_df.to_markdown(index=False, tablefmt="grid"))
 
+    _print_sep("Glosario de Medidas Estadisticas")
+    print("  \u2022 Media (Promedio): Es el valor central calculado sumando todos los datos y")
+    print("    dividiendo por el total (\u03a3x/n). Representa el valor si los datos se")
+    print("    repartieran equitativamente entre todas las observaciones.")
+    print("  \u2022 Mediana: Es el valor central exacto que divide el conjunto de datos")
+    print("    ordenados en dos partes iguales (50% por debajo, 50% por encima).")
+    print("    Es la medida ideal cuando hay valores extremos (outliers) en los datos.")
+    print("  \u2022 Moda: Es el valor o categoria que mas se repite en el conjunto de datos.")
+    print("    Puede no existir (ningun valor se repite) o haber multiples modas.")
+    print("  \u2022 Varianza: Mide la dispersion de los datos respecto a la media.")
+    print("    Se calcula como el promedio de las diferencias al cuadrado (\u03c3\u00b2).")
+    print("  \u2022 Desv. Estandar: Raiz cuadrada de la varianza. Esta en las mismas")
+    print("    unidades que los datos originales, facilitando la interpretacion.")
+    print("  \u2022 Rango: Diferencia entre el valor maximo y el minimo.")
+    print("    Indica la amplitud total de los datos.")
+    print("  \u2022 Asimetria (Skewness): Mide si los datos se concentran mas a la")
+    print("    izquierda (asimetria positiva) o a la derecha (asimetria negativa).")
+    print("    Cercana a 0 indica distribucion simetrica.")
+    print("  \u2022 Curtosis: Mide el grosor de las colas de la distribucion.")
+    print("    Leptocurtica (>0): colas pesadas, mas outliers. Platicurtica (<0):")
+    print("    colas ligeras, menos outliers. Mesocurtica (\u22480): similar a la normal.")
+
     _print_sep("Interpretacion de la Distribucion de Datos")
     for _, row in stats_df.iterrows():
         insights = []
@@ -69,17 +96,39 @@ def descriptive_stats(df: pd.DataFrame) -> pd.DataFrame:
         print(f"  {var}: {'. '.join(insights)}.")
 
     _print_sep("Distribucion de Variables Categoricas")
+    os.makedirs(FIGS_DIR, exist_ok=True)
+    grafico_num = 1
     for col in cat_cols:
         if df[col].nunique() < 20:
-            print(f"\n  --- {col} ---")
             value_counts = df[col].value_counts()
             pcts = df[col].value_counts(normalize=True) * 100
             dist_df = pd.DataFrame({"Frecuencia": value_counts, "%": pcts.round(2)})
+            print(f"\n  --- {col} ---")
             print(dist_df.to_markdown(tablefmt="grid"))
 
             top = value_counts.index[0]
             top_pct = pcts.iloc[0]
             print(f"  -> Categoria dominante: '{top}' con {top_pct:.1f}% de los registros.")
+
+            fig, ax = plt.subplots(figsize=(10, 5))
+            colors = sns.color_palette("Set2", n_colors=len(value_counts))
+            bars = ax.bar(value_counts.index.astype(str), value_counts.values, color=colors, edgecolor="white")
+            for bar, pct in zip(bars, pcts.values):
+                ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + max(value_counts) * 0.01,
+                        f"{pct:.1f}%", ha="center", fontsize=9)
+            ax.set_title(r"$\bf{Grafico\ " + str(grafico_num) + r"}$" + f": frecuencia vs {col}", fontsize=13)
+            ax.set_xlabel(col)
+            ax.set_ylabel("Frecuencia")
+            ax.tick_params(axis="x", rotation=45)
+            ax.set_axisbelow(True)
+            ax.grid(True, which="both", linestyle="-", linewidth=0.3, color="red", alpha=0.5)
+            ax.grid(True, which="major", linestyle="-", linewidth=0.5, color="red", alpha=0.6)
+            plt.tight_layout()
+            safe_name = col.lower().replace(" ", "_").replace("/", "_")
+            plt.savefig(f"{FIGS_DIR}/categoria_{safe_name}.png", bbox_inches="tight")
+            plt.close()
+            print(f"  Grafico {grafico_num} guardado: {FIGS_DIR}/categoria_{safe_name}.png")
+            grafico_num += 1
 
     _print_sep("Hallazgos Clave del Analisis Descriptivo")
     rating_col = next((c for c in df.columns if c.lower() in ("calificacion", "rating")), None)

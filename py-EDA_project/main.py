@@ -72,6 +72,14 @@ def mostrar_etapa(numero: int):
     print("#" * 120 + "\n")
 
 
+def _continuar():
+    resp = input("  \u2502  \u00bfContinuar a la siguiente etapa? (Y/n): ").strip().lower()
+    if resp not in ("y", "yes", ""):
+        print("  \u2514  Ejecucion detenida por el usuario.")
+        sys.exit(0)
+    print()
+
+
 def main():
     parser = argparse.ArgumentParser(description="EDA Pipeline - Global Mobile Reviews")
     parser.add_argument("--remove-outliers", action="store_true", help="Eliminar outliers por IQR")
@@ -95,20 +103,24 @@ def main():
     print("=" * 60)
     df = load_csv(DATA_PATH)
     summary_stats(df)
+    _continuar()
 
     # --- ETAPA 1: ANALISIS DESCRIPTIVO ---
     mostrar_etapa(1)
     print("  Ejecutando analisis descriptivo sobre las variables numericas y categoricas...\n")
     stats_df = descriptive_stats(df)
+    _continuar()
 
     # --- ETAPA 2: AJUSTE DE TIPOS DE VARIABLES ---
     mostrar_etapa(2)
     df = adjust_dtypes(df)
+    _continuar()
 
     # --- ETAPA 3: DETECCION Y TRATAMIENTO DE DATOS AUSENTES ---
     mostrar_etapa(3)
     df = handle_missing(df, strategy="auto")
     df = remove_duplicates(df)
+    _continuar()
 
     # --- ETAPA 4: IDENTIFICACION DE DATOS ATIPICOS (OUTLIERS) ---
     mostrar_etapa(4)
@@ -135,10 +147,12 @@ def main():
     if args.remove_outliers:
         df = remove_outliers_iqr(df, cols=numeric_cols)
         print(f"  Dataset despues de eliminar outliers: {df.shape}")
+    _continuar()
 
     # --- ETAPA 5: CORRELACION DE VARIABLES ---
     mostrar_etapa(5)
     corr_matrix = correlation_analysis(df)
+    _continuar()
 
     # --- VISUALIZACIONES ---
     generate_all_visualizations(df, corr_matrix)
